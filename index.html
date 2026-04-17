@@ -234,6 +234,7 @@
         <div class="legend-item"><div class="legend-color" style="background: #43aa8b;"></div>T4 (將就果腹)</div>
         <div class="legend-item"><div class="legend-color" style="background: #577590;"></div>T5 (難以吞嚥)</div>
         <div class="legend-item"><div class="legend-color" style="background: #277da1;"></div>T6 (再也不去)</div>
+        <div class="legend-item"><div class="legend-color" style="background: #888;"></div>TBD (尚未評價)</div>
     </div>
 
     <!-- 右下角書籤按鈕（控制篩選） -->
@@ -249,6 +250,7 @@
             <button class="rank-btn" style="background: #43aa8b;" data-rank="T4">T4 (花月嵐)</button>
             <button class="rank-btn" style="background: #577590;" data-rank="T5">T5 (樂麵屋)</button>
             <button class="rank-btn" style="background: #277da1;" data-rank="T6">T6 (味千)</button>
+            <button class="rank-btn" style="background: #888; grid-column: span 3;" data-rank="TBD">TBD (尚未評價)</button>
         </div>
 
         <div class="filter-title">台北市行政區</div>
@@ -282,7 +284,8 @@
         // 等級顏色映射
         const rankColorMap = {
             T0: '#e63946', T1: '#f77f00', T2: '#fcbf49',
-            T3: '#e9f542', T4: '#43aa8b', T5: '#577590', T6: '#277da1'
+            T3: '#e9f542', T4: '#43aa8b', T5: '#577590', T6: '#277da1',
+            TBD: '#888'
         };
 
         // 等級中文標語映射
@@ -293,7 +296,8 @@
             T3: 'T3 (尚可一試)',
             T4: 'T4 (將就果腹)',
             T5: 'T5 (難以吞嚥)',
-            T6: 'T6 (再也不去)'
+            T6: 'T6 (再也不去)',
+            TBD: 'TBD (尚未評價)'
         };
 
         // 提取Plus Code核心碼（僅內部使用，不顯示在介面）
@@ -308,6 +312,15 @@
         let allMarkers = [];
         let currentRank = null;
         let currentArea = null;
+
+        // 產生 Google Maps 導航 URL：優先 plusCode，其次「店名 + 地址」搜尋
+        function buildMapsUrl(shop) {
+            if (shop.plusCode) {
+                return `https://www.google.com/maps/place/${encodeURIComponent(getPlusCodeCore(shop.plusCode))}+台北市`;
+            }
+            const query = [shop.name, shop.address].filter(Boolean).join(' ');
+            return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+        }
 
         // 將店家資料畫到地圖上
         function renderShop(shop) {
@@ -331,12 +344,7 @@
                 <div class="popup-info">地區：${shop.area || '台北市'}</div>
                 <div class="popup-info">湯頭：${shop.soup || '未標註'}</div>
                 <div class="popup-info">價格：${shop.price || '未標註'}</div>
-                ${shop.plusCode ? `
-                    <a href="https://www.google.com/maps/place/${encodeURIComponent(getPlusCodeCore(shop.plusCode))}+台北市"
-                       target="_blank" class="popup-nav-btn">
-                        Google Maps
-                    </a>
-                ` : ''}
+                <a href="${buildMapsUrl(shop)}" target="_blank" class="popup-nav-btn">Google Maps</a>
             `;
             marker.bindPopup(popupContent);
 
