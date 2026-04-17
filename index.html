@@ -450,15 +450,16 @@
         // 初始化
         initMarkers();
 
-        // 顯示版本（最新 commit 的 hash + 日期）
+        // 顯示版本（最新 commit 時間 + hash，台北時區）
         fetch('https://api.github.com/repos/eddy60506/ramen-map/commits/main')
             .then(r => r.ok ? r.json() : null)
             .then(d => {
                 if (!d) return;
                 const el = document.getElementById('version');
-                const date = d.commit.author.date.slice(0, 10);
+                const dt = new Date(d.commit.author.date);
+                const ts = dt.toLocaleString('sv-SE', { timeZone: 'Asia/Taipei' }).slice(0, 16);
                 const sha = d.sha.slice(0, 7);
-                el.textContent = `v ${date} (${sha})`;
+                el.textContent = `v ${ts} (${sha})`;
                 el.href = d.html_url;
                 el.title = d.commit.message;
             })
