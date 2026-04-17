@@ -215,7 +215,10 @@
 <body>
     <div class="header">
         <h1>台北市拉麵店家排名地圖</h1>
-        <p>T0(神級必吃)~T6(再也不去) 好吃等級 | 行政區篩選 | 支援 Google Maps 導航</p>
+        <p>T0(神級必吃)~T6(再也不去) 好吃等級 | 行政區篩選 | 支援 Google Maps 導航
+            <a id="version" href="#" target="_blank" rel="noopener"
+               style="margin-left:8px;color:#bbb;font-size:12px;text-decoration:none;"></a>
+        </p>
     </div>
     <div id="map"></div>
 
@@ -346,16 +349,13 @@
         function initMarkers() {
             allMarkers = [];
 
-            const dataSource = (typeof ramenData !== 'undefined' && ramenData.length > 0)
-                ? ramenData
-                : [
-                    // 沒有資料時的範例點，方便確認地圖正常運作
-                    { name: '範例：豚骨拉麵', rank: 'T0', area: '信義區', lat: 25.0375, lng: 121.5646, soup: '豚骨', price: 'NT$280-', plusCode: '2HM8+XX 西村里 臺北市信義區' },
-                    { name: '範例：醬油拉麵', rank: 'T2', area: '大安區', lat: 25.0458, lng: 121.5219, soup: '醬油', price: 'NT$220-', plusCode: '2GVW+7W 光武里 臺北市大安區' },
-                    { name: '範例：味噌拉麵', rank: 'T3', area: '中山區', lat: 25.0602, lng: 121.5139, soup: '味噌', price: 'NT$200-', plusCode: '3HJ4+WV 金泰里 臺北市中山區' }
-                ];
+            if (typeof ramenData === 'undefined' || ramenData.length === 0) {
+                // 沒有資料時，預設視角對準台北市中心
+                map.setView([25.0478, 121.5319], 12);
+                return;
+            }
 
-            dataSource.forEach(renderShop);
+            ramenData.forEach(renderShop);
 
             const bounds = L.latLngBounds(allMarkers.map(m => [m._latlng.lat, m._latlng.lng]));
             map.fitBounds(bounds, { padding: [50, 50] });
@@ -449,6 +449,20 @@
 
         // 初始化
         initMarkers();
+
+        // 顯示版本（最新 commit 的 hash + 日期）
+        fetch('https://api.github.com/repos/eddy60506/ramen-map/commits/main')
+            .then(r => r.ok ? r.json() : null)
+            .then(d => {
+                if (!d) return;
+                const el = document.getElementById('version');
+                const date = d.commit.author.date.slice(0, 10);
+                const sha = d.sha.slice(0, 7);
+                el.textContent = `v ${date} (${sha})`;
+                el.href = d.html_url;
+                el.title = d.commit.message;
+            })
+            .catch(() => {});
     </script>
 </body>
 </html>
